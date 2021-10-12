@@ -10,6 +10,8 @@ def maxProfit(prices = [3,6,2,4]):
 			sell = p		
 		if p > sell:
 			sell = p
+	if sell - buy > profit[0]:
+		profit = (sell - buy, buy, sell)
 	return	profit[1:]
 print(maxProfit())
 
