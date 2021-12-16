@@ -1,8 +1,12 @@
 #ATCS Project 1, Data Science
-#Bpopularity: Marvin Mok
+#Date: 12/15/2021
+#By: Marvin Mok
+#My data science project, looking at the 50 most popular Steam games 
+#and searching for any correlations between different variables
+#and popularity.
 
 import pandas as pd 
-#import numppopularity as np
+#import numpy as np
 #import random
 #import seaborn as sns
 import matplotlib.pyplot as plt
