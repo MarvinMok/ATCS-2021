@@ -55,10 +55,11 @@ class TicTacToe:
         self.place_player(player, row, col)
 
 
+
     def take_turn(self, player):
         # TODO: Simply call the take_manual_turn function
         if player == 'X':
-            self.take_random_turn(player)
+            self.take_minimax_turn (player)
         else:
             self.take_manual_turn(player)
 
@@ -67,6 +68,57 @@ class TicTacToe:
         while not self.is_valid_move(x, y):
             x, y = random.randint(0,3), random.randint(0,3)
         self.board[x][y] = player
+
+    def take_minimax_turn(self, player):
+        t = self.minimax(player)
+        print(t)
+        self.board[t[1][0]][t[1][1]] = player
+
+
+    def minimax(self, player, turn = 0):
+
+        notplayer = 'X'
+        if player == 'X':
+            notplayer = 'O'
+        if self.check_win(player):
+            return (1, )
+        elif self.check_win(notplayer):
+            return (-1, )
+        elif self.check_tie():
+            return (0, )
+
+        if not turn:
+            #print('b')
+            best = -10000
+            bestmove = (-1, -1)
+            for row in range(0,3):
+                for col in range(0,3):
+
+                    if self.is_valid_move(row, col):
+                        self.board[row][col] = player
+                        move = self.minimax(player, (turn + 1) % 2)
+                        if move[0] > best:
+                            best = move[0]
+                            bestmove = (row, col)
+                        self.board[row][col] = '-'
+
+            return best, bestmove
+        else:
+            #print('w')
+            worst = 10000
+            worstmove = (-1, -1)
+            for row in range(0,3):
+                for col in range(0,3):
+
+                     if self.is_valid_move(row, col):
+                        self.board[row][col] = notplayer
+                        move = self.minimax(player, (turn + 1) % 2)
+                        if move[0] < worst:
+                            worst = move[0]
+                            worstmove = (row, col)
+                        self.board[row][col] = '-'
+
+            return worst, worstmove
 
     def check_col_win(self, player):
         # TODO: Check col win
