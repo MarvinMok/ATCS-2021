@@ -340,10 +340,6 @@ def solutiontoboard(board, solution):
 
 	
 
-
-
-
-
 def printboard(board):
 
     for row in board:
@@ -361,7 +357,7 @@ def stringToBoard(s):
 
 if __name__ == "__main__":
 	#a ='072145398145983672389762451263574819958621743714398526597236184426817935831459267'
-	a ='602050000000004030000000000430008000010000200000000700500270000000000081000600000'
+	#a ='602050000000004030000000000430008000010000200000000700500270000000000081000600000'
 	#a = '309000400200709000087000000750860239600904708928350041000000590000106007006000104'
 	#a = '672145398145000672389762451263574819958621743714390526597230184426817935831459267'
 	
@@ -419,13 +415,13 @@ if __name__ == "__main__":
 		#input()
 	print("right: ", k)
 
-	n = 100
+	n = 1
 	oldTime = time.perf_counter()
 	for i in range(n):
 		sol = matrix.DLX()
 
 		solutiontoboard(board, sol[1])
-		#printboard(board)
+		printboard(board)
 		#print()
 	print(time.perf_counter() - oldTime, (time.perf_counter() - oldTime) / n)
 
