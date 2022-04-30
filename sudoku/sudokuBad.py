@@ -74,27 +74,30 @@ class DLmatrix():
 
 
 	def getBestCol(self):
-		cur = self.root.right
-		done = False
+		# cur = self.root.right
+		# done = False
 		
-		best = cur
-		#if best.heur == 1:
-		#	return best
-		while not done:
+		# best = cur
+		# #if best.heur == 1:
+		# #	return best
+		# while not done:
 
-			if cur.heur < best.heur:
-				best = cur
-				if best.heur == 1:
-					break
+		# 	if cur.heur < best.heur:
+		# 		best = cur
+		# 		if best.heur == 1:
+		# 			break
 			
 			
-			cur = cur.right
-			if cur == self.root:
-				done = True
+		# 	cur = cur.right
+		# 	if cur == self.root:
+		# 		done = True
 		
 
 
-
+		for node in self.bins:
+			if node.binDown != node:
+				best = node.binDown
+				break
 
 		return best
 
@@ -226,7 +229,9 @@ class DLmatrix():
 				cur.left.right = cur.right
 
 
-				
+				cur.binUp.binDown = cur.binDown
+				cur.binDown.binUp = cur.binUp
+
 
 
 			else:
@@ -247,7 +252,19 @@ class DLmatrix():
 
 				cur.heur -= 1
 
-			
+				if cur.header != colNode:
+	
+					cur.binUp.binDown = cur.binDown
+					cur.binDown.binUp = cur.binUp
+
+
+					binHead = self.bins[cur.heur]
+
+					cur.binUp = binHead
+					cur.binDown = binHead.binDown
+					
+					binHead.binDown = cur
+					cur.binDown.binUp = cur
 
 				
 
@@ -282,7 +299,17 @@ class DLmatrix():
 				colHead.right.left = colHead
 
 
-				
+				if colHead.binUp.binDown == colHead:
+
+					colHead.binUp.binDown = colHead.binDown
+					colHead.binDown.binUp = colHead.binUp
+
+
+				binHead = self.bins[colHead.heur]
+				colHead.binUp = binHead
+				colHead.binDown = binHead.binDown
+				binHead.binDown = colHead
+				colHead.binDown.binUp = colHead
 
 				
 			for node in remove[1]:
@@ -292,7 +319,16 @@ class DLmatrix():
 					cur.heur += 1
 
 
-					
+					if cur.binUp.binDown == cur:
+						cur.binUp.binDown = cur.binDown
+						cur.binDown.binUp = cur.binUp
+
+					binHead = self.bins[cur.heur]
+
+					cur.binUp = binHead
+					cur.binDown = binHead.binDown
+					binHead.binDown = cur
+					cur.binDown.binUp = cur
 				# 	#print("add back")
 				node.up.down = node
 				node.down.up = node
@@ -353,11 +389,11 @@ class DLmatrix():
 
 					result = self.DLX(solution, depth + 1)	
 
-					self.restoreMatrix(removed)	
+					
 					if result[0]:
 						return True, solution
 
-					
+					self.restoreMatrix(removed)	
 					
 
 					solution.pop()
@@ -468,7 +504,7 @@ if __name__ == "__main__":
 		#input()
 	print("right: ", k)
 
-	n = 50
+	n = 1
 
 
 	oldTime = time.perf_counter()
