@@ -1,68 +1,49 @@
 import time
 
+#Normal Node for circularly doubly-linked graph with pointers up, down, left, right
 class Node:
 	def __init__(self):
 		self.right, self.left, self.up, self.down, self.header = None, None, None, None, None
 		self.id = None
 
-
+#HeaderNode for circularly doubly-linked graph with pointers up, down, left, right
+#HeaderNodes are for Column and RowHeaders. Heuristic for columns
 class HeaderNode(Node):
 	def __init__(self):
 		super().__init__()
 		self.heur = None
-		self.binUp, self.binDown = None, None
 
-
-
+#Dancing Links sparese matrix
 class DLmatrix():
 	def __init__(self):
+
+		#initialize root
 		self.root = HeaderNode()
 		self.root.right, self.root.left, self.root.up, self.root.down, self.root.header = self.root, self.root, self.root, self.root, self.root
 		self.root.id = 0
-		self.headers = [self.root] 
-		self.bins = [HeaderNode() for i in range(10)]
-		for node in self.bins:
-			node.binUp = node
-			node.binDown = node
-			#print(node, node.binUp, node.binDown)
 
-		#print(self.root)
+		#list for easy access for bugfixing
+		self.headers = [self.root] 
+
+		#add the column headers into the circularly linked list
 		for i in range(0, 324):
 			self.addHeaderNode(self.root, i + 1)
 
-		
-		
-
+		#add all possible rows
 		self.addRows()
 
-
-
-	
+	#adds a headerNode to the column Head.
 	def addHeaderNode(self, last, i):
 		new = HeaderNode()
 		new.heur = 9
 		new.id = i
 		self.headers.append(new)
 		new.header = new
-		
-
-		binHead = self.bins[9]
-
-
-
-		new.binUp = binHead
-		new.binDown = binHead.binDown
-
-		binHead.binDown = new
-		new.binDown.binUp = new
-
-
-
-		#print(new)
+	
+		#insert new column header
 		new.up = new
 		new.down = new 
 		
-		#print(last, last.right)
 		leftNode = last
 		rightNode = last.right
 		
@@ -72,32 +53,27 @@ class DLmatrix():
 		leftNode.right = new
 		new.left = leftNode
 
-
+	#finds the best column to look at deterministically by iterating through all column Headers.
 	def getBestCol(self):
+	
 		cur = self.root.right
 		done = False
 		
 		best = cur
-		#if best.heur == 1:
-		#	return best
 		while not done:
 
 			if cur.heur < best.heur:
 				best = cur
 				if best.heur == 1:
-					break
-			
+					break		
 			
 			cur = cur.right
 			if cur == self.root:
 				done = True
 		
-
-
-
-
 		return best
 
+	#get the columnheader given an index
 	def getNthCol(self, n):
 		cur = self.root
 		done = False
@@ -112,6 +88,7 @@ class DLmatrix():
 		
 		return False
 
+	#create a single doubly linked circular row
 	def createRow(self):
 		first = HeaderNode()
 		first.left, first.right = first, first
@@ -128,19 +105,9 @@ class DLmatrix():
 		k = 0
 		done = 0
 		cur = first
-		'''while not done:
-			print(cur)
-			cur = cur.right			
-			
-			k += 1
-
-			if (cur == first):
-				done = 1
-		print(k)'''
-
 		return first
 
-
+	#add all possible rows to the sparse matrix
 	def addRows(self):
 		d = {}
 		#nodes = 0
@@ -148,15 +115,19 @@ class DLmatrix():
 			for col in range(9):
 				box = row // 3 * 3 + col // 3
 				for val in range(9):
+
+					#indexes of positions for the row
 					indices =  [0, row * 9 + col + 1, 81 + val * 9 + row + 1, 81 * 2 + val * 9 + col + 1, 81 * 3 + val * 9 + box + 1]
-					#print(cols)
+
 					first = self.createRow()
 					first.id = (row, col, val)
 					cur = first
+
 					for index in indices:
 
 						colHeader = self.getNthCol(index)
 
+						#insert node
 						cur.header = colHeader
 						cur.up = colHeader
 						cur.down = colHeader.down
@@ -164,17 +135,7 @@ class DLmatrix():
 						colHeader.down = cur
 						cur.down.up = cur
 
-
-						#print(cur, cur.down.up, colHeader.down, cur.up.down, Down.up)
-						#print(colHeader, cur.up)
-						#print(Down, cur.down)
-						#a = input()
 						cur = cur.right
-						#nodes +=1
-		#d2 = {i:d[i] for i in sorted(list(d.keys()))}
-		#print(d2)
-		#print(nodes)
-
 
 	#iterate through a row and remove all its Nodes, 
 	#returns [NodeRemoved]
@@ -183,8 +144,11 @@ class DLmatrix():
 		cur = rowNode
 		
 		removed = []
+
+		#iterate through the row
 		while True:
-				
+			
+			#remove row
 			cur.up.down = cur.down
 			cur.down.up = cur.up
 
@@ -194,17 +158,12 @@ class DLmatrix():
 			if cur == rowNode:
 				break
 
-		#print(removed, len(removed))
 		return removed
-
 
 	#iterate through a column, removing each row \
 	#returns the [columnHeader, [removeRow()]]
-
-
 	def removeCol(self, colNode):
-		#print("removeCol2")
-
+		
 		colNode = colNode.header
 
 		done = False
@@ -214,48 +173,30 @@ class DLmatrix():
 		colHeader = None
 		removed = []
 
-		rows = set()
+		rows = []
 		while True:
-			#print(cur, cur.up, cur.down)
-			#input()
 
-			
+			#remove Column Header
 			if cur.id is not None:
-				#print(cur.id)
 				cur.right.left = cur.left
 				cur.left.right = cur.right
-
-
-				
-
-
 			else:
-				rows.add(cur)
+				rows.append(cur)
 				
 			cur = cur.down
 			if cur == colNode:
 				break
 
+		#remove rows based after iterating through the column
 		for row in rows:
 			removed += self.removeRow(row)
 
-
+		#change the heuristic for each Column
 		for remove in removed:
 			if remove.id is None:
 				cur = remove.header
-
-
 				cur.heur -= 1
 
-			
-
-				
-
-	
-
-
-
-		
 		return [colNode, removed]
 
 	#deletes corresponding rows and cols in DL matrix to set up sudoku board
@@ -265,6 +206,8 @@ class DLmatrix():
 				box = row // 3 * 3 + col // 3
 				val = board[row][col]
 				if val != 0:
+
+					#indices of columns to remove
 					indices =  [row * 9 + col + 1, 81 + (val - 1) * 9 + row + 1, 81 * 2 + (val - 1) * 9 + col + 1, 81 * 3 + (val - 1) * 9 + box + 1]
 					for index in indices:
 
@@ -272,112 +215,80 @@ class DLmatrix():
 						if colHead:
 							self.removeCol(colHead)
 
-
+	#restore removed nodes to the matrix when backtracking
 	def restoreMatrix(self, removed):
-		#input(removed)
+	
 		for remove in removed:
 			colHead = remove[0]
 			if colHead:
+
+				#add back columnHeader
 				colHead.left.right = colHead
 				colHead.right.left = colHead
 
-
-				
-
-				
 			for node in remove[1]:
-
+				#change heuristc
 				if node.id is None:
 					cur = node.header
 					cur.heur += 1
-
-
-					
-				# 	#print("add back")
+				
+				#add back node
 				node.up.down = node
 				node.down.up = node
-
-
-
-
-
-
+		
 	def DLX(self, solution = [], depth = 0):
 		
-		#if there are no more columns --> solution
-		#if there are no more rows but there are columns --> terminate unsuccessfully
-		#pick a column
-		#iterate through the rows in each col
-			#append solution
-			#iterate through each column in the row 
-			#for the nonHeaderCol
-				#removeCol
-			#DLX
-			#restoreCol
-
-		#print(depth)
+		#base case
 		if self.root == self.root.right:
-			#print("w")
 			return True, solution
 
 		else:
 			best = self.getBestCol()
-			#print(best.heur)
-
 			done = False
 			cur = best
+			#iterate through each row in the column
 			while not done:
 
 				if cur.id is None:
-				
+					
+					#add move to solution
 					solution.append(cur)					
 					removed = []
 					
-
-
 					done2 = False
 					cur2 = cur
+
+					#removes all connected columns for a given row
 					while not done2:
-						#print(cur2)
-						#input(cur2)
+	
 						if cur2.id is None:
 							removed.append(self.removeCol(cur2))	
 
 						cur2 = cur2.right
 						
-
 						if cur2 == cur:
 							done2 = True
 
-
-
+					#recursive call
 					result = self.DLX(solution, depth + 1)	
 
-					self.restoreMatrix(removed)	
+					#base case
 					if result[0]:
 						return True, solution
 
-					
-					
-
+					#restore matrix
+					self.restoreMatrix(removed)	
 					solution.pop()
-					#print(removed)
-					#print()
-					
 
-
+				#iterate
 				cur = cur.down
-				#print('down')
 				if cur == best:
 					done = True
+
 			return False, 1
 
-
-
-
-
-
-
+#converts list of nodes into their corresponding values
+#and puts it into the board list
 def solutiontoboard(board, solution):
 
 	while solution:
@@ -389,9 +300,7 @@ def solutiontoboard(board, solution):
 		row, col, val = cur.id
 		board[row][col] = val + 1
 
-
-	
-
+#prints the sudoku board in a grid
 def printboard(board):
 
     for row in board:
@@ -399,134 +308,44 @@ def printboard(board):
             print(ele, end=" ")
         print()
 
-
+#converts the string of 81 digits into the 9 by 9 2D array
 def stringToBoard(s):
 	board = [[None for j in range(0, 9)] for i in range(0, 9)] 
 	for i in range(0,9):
 		for j in range(0,9):
-			board[i][j] = int(a[i * 9 + j])
+			board[i][j] = int(s[i * 9 + j])
 	return board
 
+#main
 if __name__ == "__main__":
+	#sample boards
 	#a ='000000398145983672389762451263574819958621743714398526597236184426817935831459267'
-	a ='602050000000004030000000000430008000010000200000000700500270000000000081000600000'
+	#a ='602050000000004030000000000430008000010000200000000700500270000000000081000600000'
 	#a = '720096003000205000080004020000000060106503807040000000030800090000702000200430018'
 	#a = '672145398145000672389762451263574819958621743714390526597230184426817935831459267'
 	#a = '000004028406000005100030600000301000087000140000709000002010003900000507670400000'
+	#a = '002009001000080040050400000009000000230007900710000002001003007000600100600050080'
 	
-	
+	#initialize matrix
 	matrix = DLmatrix()
-	#a = input("board: ")
 
-	board = stringToBoard(a)
-	a2 = a.replace('0', '')
+	#input sudoku
+	sudoku = input("board: ")
 
-	print(a2, len(a2))
+	board = stringToBoard(sudoku)
 	
 	matrix.inputBoard(board)
 
-
-
-	#print([e.heur for e in matrix.headers])
-	#matrix.inputBoard(board)
-	r = matrix.root
-	cur = matrix.root
+	printboard(board)
 	print()
-	k = 0
-	done = 0
-	while done != 1:
-		#print(cur)
-		#print(cur.id)
-		#print(k)
-		#print()
-		#input(cur)
-		cur = cur.down
-		
-		
-		
-		k += 1
-		if (cur == r):
-			done += 1
-		#input()
-	print("down: ", k)
-
-	k = 0
-	done = 0
-	while done != 1:
-		#print(cur)
-		#print(cur.id)
-		#print(k)
-		#print()
-		#input(cur.id)
-		cur = cur.right
-		
-		
-		
-		k += 1
-		if (cur == r):
-			done += 1
-		#input()
-	print("right: ", k)
-
-	n = 50
-
-
 	oldTime = time.perf_counter()
-	for i in range(n):
-		sol = matrix.DLX()
+	sol = matrix.DLX()
+	solutiontoboard(board, sol[1])
+	printboard(board)
+	print()
+	print(time.perf_counter() - oldTime)
 
-		solutiontoboard(board, sol[1])
 
-
-		printboard(board)
-		#print()
-	print(time.perf_counter() - oldTime, (time.perf_counter() - oldTime) / n)
-
-	# heurs = []
-
-	# cur =  matrix.root
-
-	# while True:
-	# 	heurs.append((cur.id, cur.heur))
-	# 	cur = cur.right
-	# 	if cur == matrix.root:
-	# 		break
-	# heurs.sort()
-	# print(heurs[1:])
-
-	# heurs2 = []
-	# #print(self.bins)
-
-	# i = 1
-	# for node in matrix.bins[1:]:
-	# 	if node.binDown != node:
-	# 		cur = node.binDown
-	# 		while True:
-	# 			heurs2.append((cur.id, cur.heur))
-
-	# 			cur = cur.binDown
-	# 			#print(cur, node, matrix.bins)
-	# 			#input()
-	# 			if cur in matrix.bins:
-	# 				break
-	# 	i+=1
-
-	# heurs2.sort()
-	# print(heurs2)
-
-	# h3 = []
-	# node = matrix.bins[0]
-	# if node.binDown != node:
-	# 	cur = node.binDown
-	# 	while True:
-	# 		h3.append((cur.id, cur.heur))
-
-	# 		cur = cur.binDown
-	# 		#print(cur, node, matrix.bins)
-	# 		#input()
-	# 		if cur in matrix.bins:
-	# 			break
-	# print(h3)
 
 
 
